@@ -1,0 +1,37 @@
+.profile-card {
+  max-width: 420px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.profile-card h2 {
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.profile-row span {
+  color: #64748b;
+}
+
+.profile-row strong {
+  color: #020617;
+}
+
+.profile-badge {
+  margin-top: 20px;
+  padding: 10px;
+  background: #e0f2fe;
+  color: #0369a1;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: 600;
+}

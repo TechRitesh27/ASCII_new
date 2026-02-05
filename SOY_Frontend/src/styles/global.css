@@ -1,0 +1,100 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f8fafc;
+}
+
+.page {
+  padding: 30px;
+  min-height: 80vh;
+}
+
+/* Nomination Form */
+.form {
+  max-width: 500px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form input,
+.form textarea {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+}
+
+.form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form button {
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.form button:hover {
+  background: #1e40af;
+}
+
+.success {
+  color: green;
+  font-size: 14px;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .form {
+    width: 90%;
+  }
+}
+
+/* Result Page */
+.result-container {
+  text-align: center;
+}
+
+.result-card {
+  max-width: 400px;
+  margin: 30px auto;
+  padding: 25px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.result-card h2 {
+  margin-bottom: 10px;
+}
+
+.result-card hr {
+  margin: 15px 0;
+}
+
+.result-card h3 {
+  margin-top: 15px;
+  color: #16a34a;
+}
+
+.result-note {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #475569;
+}
+
+@media (max-width: 600px) {
+  .result-card {
+    width: 90%;
+  }
+}
