@@ -121,6 +121,11 @@ public class AuthService {
        UTIL
        ===================================================== */
     private String generateStudentCollegeId() {
-        return "STU" + (System.currentTimeMillis() % 100000);
+
+        long studentCount =
+                userRepo.countByRole(Role.STUDENT);
+
+        return "STU" + String.format("%04d", studentCount + 1);
     }
+
 }

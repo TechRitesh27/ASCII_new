@@ -1,6 +1,5 @@
 package com.ascii.soy.service;
 
-import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -29,6 +28,10 @@ public class FacultyEvaluationService {
         this.userRepo = userRepo;
         this.nominationRepo = nominationRepo;
     }
+
+    /* ==========================================================
+                        FACULTY EVALUATION
+       ========================================================== */
 
     public FacultyEvaluation evaluate(
             String facultyCollegeId,
@@ -75,19 +78,17 @@ public class FacultyEvaluationService {
 
         evaluationRepo.save(evaluation);
 
-        // 🔥 Recalculate average after every evaluation
-        updateAverageScore(nomination);
-
-        // 🔥 Auto shortlist top 3
-        autoShortlistTopThree();
+        // Update nomination status & average
+        updateNominationAfterEvaluation(nomination);
 
         return evaluation;
     }
 
-    /* ================================
-           AVERAGE CALCULATION
-       ================================ */
-    private void updateAverageScore(Nomination nomination) {
+    /* ==========================================================
+                    UPDATE NOMINATION AFTER EVALUATION
+       ========================================================== */
+
+    private void updateNominationAfterEvaluation(Nomination nomination) {
 
         List<FacultyEvaluation> evaluations =
                 evaluationRepo.findByNomination(nomination);
@@ -98,32 +99,19 @@ public class FacultyEvaluationService {
                 .orElse(0.0);
 
         nomination.setAverageScore(average);
+        nomination.setEvaluationCount(evaluations.size());
+
+        // Change status from SUBMITTED → UNDER_REVIEW
+        if (nomination.getStatus() == NominationStatus.SUBMITTED) {
+            nomination.setStatus(NominationStatus.UNDER_REVIEW);
+        }
+
         nominationRepo.save(nomination);
     }
 
-    /* ================================
-           AUTO SHORTLIST LOGIC
-       ================================ */
-    private void autoShortlistTopThree() {
-
-        List<Nomination> all =
-                nominationRepo.findAll().stream()
-                        .filter(n -> n.getAverageScore() != null)
-                        .sorted(Comparator.comparingDouble(
-                                Nomination::getAverageScore).reversed())
-                        .toList();
-
-        for (int i = 0; i < all.size(); i++) {
-
-            if (i < 3) {
-                all.get(i).setStatus(NominationStatus.SHORTLISTED);
-            } else {
-                all.get(i).setStatus(NominationStatus.SUBMITTED);
-            }
-
-            nominationRepo.save(all.get(i));
-        }
-    }
+    /* ==========================================================
+                         FACULTY HISTORY
+       ========================================================== */
 
     public List<FacultyEvaluation> getMyEvaluations(String facultyCollegeId) {
 
@@ -141,5 +129,4 @@ public class FacultyEvaluationService {
 
         return evaluationRepo.findByFaculty(faculty);
     }
-
 }

@@ -2,6 +2,8 @@ package com.ascii.soy.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(
         name = "faculty_evaluations",
@@ -31,8 +33,10 @@ public class FacultyEvaluation {
     private int activityScore;
     private int leadershipScore;
     private int disciplineScore;
-
     private int totalScore;
+
+    @Column(nullable = false)
+    private java.time.LocalDateTime evaluatedAt = java.time.LocalDateTime.now();
 
     public FacultyEvaluation() {}
 
@@ -64,4 +68,12 @@ public class FacultyEvaluation {
 
     public int getTotalScore() { return totalScore; }
     public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+
+    public LocalDateTime getEvaluatedAt() {
+        return evaluatedAt;
+    }
+
+    public void setEvaluatedAt(LocalDateTime evaluatedAt) {
+        this.evaluatedAt = evaluatedAt;
+    }
 }

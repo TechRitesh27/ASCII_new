@@ -3,7 +3,6 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-
   const [auth, setAuth] = useState(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -14,13 +13,16 @@ export const AuthProvider = ({ children }) => {
     return null;
   });
 
-  const login = (token, role) => {
-    if (!token || !role) return;
+  const login = (token, roleFromBackend) => {
+    if (!token || !roleFromBackend) return;
+
+    // Remove ROLE_ prefix
+    const cleanRole = roleFromBackend.replace("ROLE_", "");
 
     localStorage.setItem("token", token);
-    localStorage.setItem("role", role);
+    localStorage.setItem("role", cleanRole);
 
-    setAuth({ token, role });
+    setAuth({ token, role: cleanRole });
   };
 
   const logout = () => {

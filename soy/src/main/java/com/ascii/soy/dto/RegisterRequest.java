@@ -23,8 +23,11 @@ public class RegisterRequest {
     private String contactNumber;
 
     @Email
+    @NotBlank
     private String email;
 
+
+    @NotBlank
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 

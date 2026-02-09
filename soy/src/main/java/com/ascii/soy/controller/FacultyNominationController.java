@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ascii.soy.dto.FacultyNominationDTO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
@@ -12,6 +13,7 @@ import com.ascii.soy.service.NominationService;
 
 @RestController
 @RequestMapping("/api/faculty")
+@PreAuthorize("hasRole('FACULTY')")
 public class FacultyNominationController {
 
     private final NominationService nominationService;

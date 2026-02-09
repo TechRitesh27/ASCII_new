@@ -3,6 +3,7 @@ package com.ascii.soy.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -10,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.ascii.soy.security.JwtAuthenticationFilter;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
@@ -26,27 +28,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        /* ---------- PUBLIC ---------- */
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        /* ---------- STUDENT ---------- */
                         .requestMatchers("/api/nominations/**")
                         .hasAuthority("ROLE_STUDENT")
+
                         .requestMatchers("/api/votes/**")
                         .hasAuthority("ROLE_STUDENT")
 
-                        /* ---------- FACULTY ---------- */
                         .requestMatchers("/api/faculty/**")
                         .hasAuthority("ROLE_FACULTY")
 
-                        /* ---------- ADMIN ---------- */
                         .requestMatchers("/api/admin/**")
                         .hasAuthority("ROLE_ADMIN")
+
                         .requestMatchers("/api/results/**")
                         .hasAuthority("ROLE_ADMIN")
 
-                        /* ---------- FALLBACK ---------- */
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,12 +1,15 @@
 package com.ascii.soy.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class AddFacultyRequest {
 
     @NotBlank
     private String fullName;
 
+    @Email
     @NotBlank
     private String email;
 
@@ -16,8 +19,9 @@ public class AddFacultyRequest {
     @NotBlank
     private String designation;
 
-    @NotBlank
+    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid contact number")
     private String contactNumber;
+
 
     // getters & setters
 

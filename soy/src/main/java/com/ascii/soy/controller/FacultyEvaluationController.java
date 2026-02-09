@@ -1,6 +1,7 @@
 package com.ascii.soy.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +11,9 @@ import com.ascii.soy.service.FacultyEvaluationService;
 
 @RestController
 @RequestMapping("/api/faculty/evaluations")
+@PreAuthorize("hasRole('FACULTY')")
 public class FacultyEvaluationController {
+
 
     private final FacultyEvaluationService evaluationService;
 

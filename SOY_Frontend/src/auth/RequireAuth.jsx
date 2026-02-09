@@ -10,7 +10,7 @@ const RequireAuth = ({ allowedRole, children }) => {
   }
 
   if (allowedRole && role !== allowedRole) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/${role?.toLowerCase()}`} replace />;
   }
 
   return children;

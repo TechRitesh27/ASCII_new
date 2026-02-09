@@ -10,41 +10,78 @@ public class Nomination {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Link nomination to student
+    /* ================= STUDENT ================= */
+
     @OneToOne
     @JoinColumn(name = "student_id", nullable = false, unique = true)
     private User student;
 
-    // Academic
+    /* ================= ACADEMIC ================= */
+
     private Double cgpa;
 
-    // Projects & Internship
     @Column(length = 500)
     private String majorProject;
 
+    @Column(length = 500)
     private String internshipDetails;
 
-    // Achievements
     @Column(length = 500)
     private String achievements;
 
-    // Leadership
     private String leadershipRole;
 
-    // Proof URLs / file references
-    private String proofLink;   // Google Drive / GitHub / PDF link
+    private String proofLink;
 
-    // Average Calculation
-    private Double averageScore;
+    /* ================= EVALUATION ================= */
 
+    private Double averageScore = 0.0;
 
-    // Status tracking
+    private Integer evaluationCount = 0;
+
+    /* ================= VOTING ================= */
+
+    private Integer voteCount = 0;
+
+    /* ================= FINAL RESULT ================= */
+
+    private Double finalScore = 0.0;
+
+    /* ================= STATUS ================= */
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private NominationStatus status = NominationStatus.SUBMITTED;
 
     public Nomination() {}
 
-    // Getters and Setters
+    // Getters & Setters below (unchanged except new fields)
+
+    // ... keep your existing getters/setters ...
+
+    public Integer getEvaluationCount() {
+        return evaluationCount;
+    }
+
+    public void setEvaluationCount(Integer evaluationCount) {
+        this.evaluationCount = evaluationCount;
+    }
+
+    public Integer getVoteCount() {
+        return voteCount;
+    }
+
+    public void setVoteCount(Integer voteCount) {
+        this.voteCount = voteCount;
+    }
+
+    public Double getFinalScore() {
+        return finalScore;
+    }
+
+    public void setFinalScore(Double finalScore) {
+        this.finalScore = finalScore;
+    }
 
     public Long getId() {
         return id;
@@ -110,19 +147,19 @@ public class Nomination {
         this.proofLink = proofLink;
     }
 
-    public NominationStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(NominationStatus status) {
-        this.status = status;
-    }
-
     public Double getAverageScore() {
         return averageScore;
     }
 
     public void setAverageScore(Double averageScore) {
         this.averageScore = averageScore;
+    }
+
+    public NominationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(NominationStatus status) {
+        this.status = status;
     }
 }

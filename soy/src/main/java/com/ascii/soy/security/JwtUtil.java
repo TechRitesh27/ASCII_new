@@ -1,16 +1,21 @@
 package com.ascii.soy.security;
 
-import java.nio.charset.StandardCharsets; import java.util.Date;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims; import io.jsonwebtoken.JwtException; import io.jsonwebtoken.Jwts; import io.jsonwebtoken.SignatureAlgorithm; import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
-@Component public class JwtUtil {
+@Component
+public class JwtUtil {
 
-    // Must be at least 32 chars for HS256
     private static final String SECRET =
             "soy_secret_key_for_ascii_project_123456";
 
@@ -26,7 +31,7 @@ import io.jsonwebtoken.Claims; import io.jsonwebtoken.JwtException; import io.js
 
         return Jwts.builder()
                 .setSubject(collegeId)
-                .claim("role", role) // STUDENT / FACULTY / ADMIN
+                .claim("role", "ROLE_" + role) // IMPORTANT FIX
                 .setIssuedAt(new Date())
                 .setExpiration(
                         new Date(System.currentTimeMillis() + EXPIRATION_TIME)
@@ -56,8 +61,6 @@ import io.jsonwebtoken.Claims; import io.jsonwebtoken.JwtException; import io.js
         return parseClaims(token).get("role", String.class);
     }
 
-    /* ================= INTERNAL ================= */
-
     private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -65,5 +68,4 @@ import io.jsonwebtoken.Claims; import io.jsonwebtoken.JwtException; import io.js
                 .parseClaimsJws(token)
                 .getBody();
     }
-
 }

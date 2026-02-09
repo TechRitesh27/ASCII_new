@@ -15,58 +15,87 @@ public class StudentVoteService {
     private final StudentVoteRepository voteRepository;
     private final UserRepository userRepository;
     private final NominationRepository nominationRepository;
+    private final VotingPhaseRepository votingPhaseRepository;
 
     public StudentVoteService(
             StudentVoteRepository voteRepository,
             UserRepository userRepository,
-            NominationRepository nominationRepository) {
+            NominationRepository nominationRepository,
+            VotingPhaseRepository votingPhaseRepository) {
 
         this.voteRepository = voteRepository;
         this.userRepository = userRepository;
         this.nominationRepository = nominationRepository;
+        this.votingPhaseRepository = votingPhaseRepository;
     }
+
+    /* ==========================================================
+                      CHECK IF STUDENT VOTED
+       ========================================================== */
 
     public boolean hasStudentVoted(String studentCollegeId) {
 
         User student = userRepository.findByCollegeId(studentCollegeId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Student not found"));
 
         return voteRepository.existsByVoter(student);
     }
 
+    /* ==========================================================
+                          CAST VOTE
+       ========================================================== */
 
-    /**
-     * Student casts a vote (JWT-based identity)
-     */
     public StudentVote castVote(String studentCollegeId, Long nominationId) {
 
-        // 1️⃣ Fetch student
+
+        VotingPhase phase = votingPhaseRepository.findById(1L)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Voting phase not initialized"
+                ));
+
+        if (!phase.isVotingOpen()) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Voting is currently closed"
+            );
+        }
+
+        // Fetch student
         User student = userRepository.findByCollegeId(studentCollegeId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Student not found"));
 
-        // 2️⃣ Role check
         if (student.getRole() != Role.STUDENT) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Only students can vote");
         }
 
-        // 3️⃣ One-vote rule
-        if (voteRepository.findByVoter(student).isPresent()) {
+        // 2️⃣ One-vote rule
+        if (voteRepository.existsByVoter(student)) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "You have already voted");
         }
 
-        // 4️⃣ Fetch nomination
+        // 3️⃣ Fetch nomination
         Nomination nomination = nominationRepository.findById(nominationId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Nomination not found"));
 
-        // 5️⃣ Voting allowed only for SHORTLISTED nominations
+        // 4️⃣ Must be shortlisted
         if (nomination.getStatus() != NominationStatus.SHORTLISTED) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Voting is allowed only for shortlisted nominations"
+                    "Voting allowed only for shortlisted candidates"
+            );
+        }
+
+        // 5️⃣ Prevent self-voting
+        if (nomination.getStudent().getId().equals(student.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "You cannot vote for yourself"
             );
         }
 
@@ -75,14 +104,24 @@ public class StudentVoteService {
         vote.setVoter(student);
         vote.setNomination(nomination);
 
-        return voteRepository.save(vote);
+        voteRepository.save(vote);
+
+        // 7️⃣ Update vote count inside Nomination
+        int currentVotes = nomination.getVoteCount() == null ? 0 : nomination.getVoteCount();
+        nomination.setVoteCount(currentVotes + 1);
+
+        nominationRepository.save(nomination);
+
+        return vote;
     }
 
-    /**
-     * Calculates voting score for a nomination
-     * (1 vote = 1 point)
-     */
+    /* ==========================================================
+                        CALCULATE VOTING SCORE
+       ========================================================== */
+
     public int calculateVotingScore(Nomination nomination) {
+
         return (int) voteRepository.countByNomination(nomination);
     }
+
 }

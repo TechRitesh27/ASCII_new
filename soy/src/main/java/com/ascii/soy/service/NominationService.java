@@ -1,11 +1,13 @@
 package com.ascii.soy.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ascii.soy.dto.FacultyNominationDTO;
@@ -14,6 +16,7 @@ import com.ascii.soy.entity.*;
 import com.ascii.soy.repository.*;
 
 @Service
+@Transactional
 public class NominationService {
 
     private final NominationRepository nominationRepo;
@@ -47,11 +50,10 @@ public class NominationService {
                     "Only students can submit nominations");
         }
 
-        // 🔒 BE-only eligibility
         if (student.getStudentClass() != StudentClass.BE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Only BE students are eligible for nomination");
+                    "Only BE students are eligible");
         }
 
         if (nominationRepo.existsByStudent(student)) {
@@ -74,7 +76,7 @@ public class NominationService {
     }
 
     /* ==========================================================
-                     STUDENT — AUTO CHECK
+                     STUDENT — VIEW OWN NOMINATION
        ========================================================== */
 
     public Optional<Nomination> getMyNomination(String collegeId) {
@@ -90,10 +92,6 @@ public class NominationService {
                         FACULTY — VIEW LIST
        ========================================================== */
 
-    /**
-     * Faculty nomination list with evaluation status
-     * Fixes: faculty still seeing "Evaluate" after evaluation
-     */
     public List<FacultyNominationDTO> getNominationsForFaculty(String facultyCollegeId) {
 
         User faculty = userRepo.findByCollegeId(facultyCollegeId)
@@ -123,36 +121,43 @@ public class NominationService {
         }).collect(Collectors.toList());
     }
 
-    public void shortlistNomination(Long id) {
+    /* ==========================================================
+                    ADMIN — GENERATE SHORTLIST (OPTION C)
+       ========================================================== */
 
-        Nomination nomination = nominationRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Nomination not found"));
+    public void generateShortlist() {
 
-        if (nomination.getStatus() != NominationStatus.SUBMITTED) {
+        List<Nomination> reviewed =
+                nominationRepo.findByStatus(NominationStatus.UNDER_REVIEW);
+
+        if (reviewed.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Only submitted nominations can be shortlisted");
+                    "No nominations available for shortlisting");
         }
 
-        List<FacultyEvaluation> evaluations =
-                evaluationRepo.findByNomination(nomination);
+        // Sort by averageScore descending
+        List<Nomination> sorted = reviewed.stream()
+                .sorted(Comparator.comparingDouble(
+                        Nomination::getAverageScore).reversed())
+                .toList();
 
-        if (evaluations.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Cannot shortlist without faculty evaluation");
+        for (int i = 0; i < sorted.size(); i++) {
+
+            Nomination nomination = sorted.get(i);
+
+            if (i < 3) {
+                nomination.setStatus(NominationStatus.SHORTLISTED);
+            } else {
+                nomination.setStatus(NominationStatus.REJECTED);
+            }
+
+            nominationRepo.save(nomination);
         }
-
-        nomination.setStatus(NominationStatus.SHORTLISTED);
-        nominationRepo.save(nomination);
     }
 
-
-
     /* ==========================================================
-                     STUDENT VOTING — STEP 9
+                     STUDENT VOTING — VIEW SHORTLIST
        ========================================================== */
 
     public List<Nomination> getShortlistedNominations() {

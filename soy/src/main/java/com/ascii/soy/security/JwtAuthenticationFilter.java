@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 🔴 ABSOLUTE SKIP
+        // Skip authentication endpoints
         if (path.startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
@@ -41,17 +41,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+
             String token = authHeader.substring(7);
 
             if (jwtUtil.isTokenValid(token)) {
+
                 String collegeId = jwtUtil.extractCollegeId(token);
-                String role = jwtUtil.extractRole(token);
+                String role = jwtUtil.extractRole(token); // already ROLE_XXX
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 collegeId,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                List.of(new SimpleGrantedAuthority(role)) // FIXED
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(auth);

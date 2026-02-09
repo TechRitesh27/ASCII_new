@@ -1,30 +1,80 @@
-import { Link, Navigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
+import { Link } from "react-router-dom";
+import "./Home.css";
 
 const Home = () => {
-  const { auth } = useAuth();
-
-  // If already logged in, redirect to dashboard
-  if (auth?.role === "STUDENT") return <Navigate to="/student" />;
-  if (auth?.role === "FACULTY") return <Navigate to="/faculty" />;
-  if (auth?.role === "ADMIN") return <Navigate to="/admin" />;
-
   return (
-    <div className="page">
-      <h1>Best Student of the Year</h1>
+    <div className="home-container">
+      
+      {/* HERO SECTION */}
+      <section className="hero">
+        <h1>🏆 ASCII – Student of the Year</h1>
+        <p>
+          Recognizing excellence in academics, leadership, innovation,
+          and contribution to the department.
+        </p>
 
-      <p>
-        A transparent and fair evaluation system combining faculty assessment
-        and student participation.
-      </p>
+        <div className="hero-buttons">
+          <Link to="/login" className="btn-primary">
+            Login
+          </Link>
 
-      <Link to="/login">
-        <button>Login</button>
-      </Link>
+          <Link to="/register" className="btn-outline">
+            Student Register
+          </Link>
+        </div>
+      </section>
 
-      <Link to="/register">
-        <button style={{ marginLeft: "10px" }}>Register</button>
-      </Link>
+      {/* ABOUT SECTION */}
+      <section className="about">
+        <h2>About SOY</h2>
+        <p>
+          The Student of the Year award is designed to identify and
+          reward outstanding students from the Computer Engineering
+          department based on:
+        </p>
+
+        <ul>
+          <li>📚 Academic Performance</li>
+          <li>💡 Major Projects & Innovation</li>
+          <li>🏢 Internships & Industry Exposure</li>
+          <li>🏅 Achievements & Activities</li>
+          <li>👑 Leadership & Discipline</li>
+        </ul>
+      </section>
+
+      {/* PROCESS SECTION */}
+      <section className="process">
+        <h2>How It Works</h2>
+
+        <div className="process-grid">
+          <div className="process-card">
+            <h3>1️⃣ Nomination</h3>
+            <p>Eligible BE students submit their nomination form.</p>
+          </div>
+
+          <div className="process-card">
+            <h3>2️⃣ Faculty Evaluation</h3>
+            <p>Multiple faculty members evaluate candidates.</p>
+          </div>
+
+          <div className="process-card">
+            <h3>3️⃣ Student Voting</h3>
+            <p>Students vote for shortlisted candidates.</p>
+          </div>
+
+          <div className="process-card">
+            <h3>4️⃣ Final Result</h3>
+            <p>
+              Final score = 80% Faculty + 20% Student Voting.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="home-footer">
+        <p>© {new Date().getFullYear()} ASCII – Computer Engineering</p>
+      </footer>
     </div>
   );
 };

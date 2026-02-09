@@ -6,6 +6,7 @@ import com.ascii.soy.dto.RegisterRequest;
 import com.ascii.soy.dto.ResetPasswordRequest;
 import com.ascii.soy.service.AuthService;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,8 @@ public class AuthController {
        ===================================================== */
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(
-            @RequestBody RegisterRequest request) {
+            @Valid @RequestBody RegisterRequest request) {
+
 
         LoginResponse response = authService.register(request);
 
