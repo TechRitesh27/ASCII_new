@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -10,7 +9,12 @@ import {
   Alert,
   CircularProgress,
   Divider,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { motion } from "framer-motion";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import api from "../../services/api";
 import { useAuth } from "../../auth/AuthContext";
 
@@ -20,6 +24,7 @@ const Login = () => {
 
   const [collegeId, setCollegeId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,63 +34,64 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await api.post("/auth/login", {
-        collegeId,
-        password,
-      });
+      const res = await api.post("/auth/login", { collegeId, password });
 
-      const rawRole = res.data.role;
-      const cleanRole = rawRole.replace("ROLE_", "");
-
-      // Save token + role
+      const cleanRole = res.data.role.replace("ROLE_", "");
       login(res.data.token, cleanRole);
 
-      // Redirect by role
       if (cleanRole === "STUDENT") navigate("/student");
       else if (cleanRole === "FACULTY") navigate("/faculty");
       else if (cleanRole === "ADMIN") navigate("/admin");
       else navigate("/");
-
     } catch (err) {
-      if (err.response?.status === 401) {
+      if (err.response?.status === 401)
         setError("Invalid College ID or Password.");
-      } else if (err.response?.status === 403) {
-        setError("Your account is inactive. Please contact Admin.");
-      } else {
-        setError("Login failed. Please try again.");
-      }
+      else if (err.response?.status === 403)
+        setError("Your account is inactive.");
+      else setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "background.default",
-      }}
+    <motion.div
+      initial={{ x: 100, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: -100, opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      style={{ width: "100%", display: "flex", justifyContent: "center" }}
     >
-      <Card sx={{ width: 420, p: 3 }}>
+      <Card
+        sx={{
+          width: 420,
+          p: 4,
+          backgroundColor: "rgba(30,41,59,0.9)",
+          backdropFilter: "blur(12px)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 0 60px rgba(37,99,235,0.25)",
+          borderRadius: 4,
+        }}
+      >
         <CardContent>
 
-          <Typography variant="h4" align="center" gutterBottom>
-            SOY Login
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{ fontWeight: 600, color: "#fff" }}
+          >
+            Welcome Back
           </Typography>
 
           <Typography
             align="center"
             variant="body2"
-            color="text.secondary"
-            sx={{ mb: 2 }}
+            sx={{ mb: 3, color: "#94a3b8" }}
           >
-            Sign in to access your dashboard
+            Sign in to continue
           </Typography>
 
-          <Box component="form" onSubmit={handleLogin}>
+          <form onSubmit={handleLogin}>
 
             <TextField
               label="College ID"
@@ -98,12 +104,27 @@ const Login = () => {
 
             <TextField
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               fullWidth
               margin="normal"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <VisibilityOff sx={{ color: "#94a3b8" }} />
+                      ) : (
+                        <Visibility sx={{ color: "#94a3b8" }} />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             {error && (
@@ -116,11 +137,19 @@ const Login = () => {
               type="submit"
               variant="contained"
               fullWidth
-              sx={{ mt: 3 }}
+              sx={{
+                mt: 3,
+                py: 1.3,
+                fontWeight: 600,
+                borderRadius: 3,
+                boxShadow: "0 10px 30px rgba(37,99,235,0.4)",
+                transition: "0.3s",
+                "&:hover": { transform: "translateY(-3px)" },
+              }}
               disabled={loading}
             >
               {loading ? (
-                <CircularProgress size={24} color="inherit" />
+                <CircularProgress size={22} color="inherit" />
               ) : (
                 "Login"
               )}
@@ -128,21 +157,17 @@ const Login = () => {
 
             <Divider sx={{ my: 3 }} />
 
-            {/* Register Link */}
-            <Typography align="center" variant="body2">
-              Don't have an account?{" "}
-              <Link to="/register">Register here</Link>
+            <Typography align="center" sx={{ color: "#cbd5e1" }}>
+              Don’t have an account?{" "}
+              <Link to="/register" style={{ color: "#2563eb" }}>
+                Register
+              </Link>
             </Typography>
 
-            {/* Back to Home */}
-            <Typography align="center" variant="body2" sx={{ mt: 1 }}>
-              <Link to="/">⬅ Back to Home</Link>
-            </Typography>
-
-          </Box>
+          </form>
         </CardContent>
       </Card>
-    </Box>
+    </motion.div>
   );
 };
 

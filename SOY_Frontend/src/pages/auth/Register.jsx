@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -11,7 +10,12 @@ import {
   Alert,
   CircularProgress,
   Divider,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { motion } from "framer-motion";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import api from "../../services/api";
 import { useAuth } from "../../auth/AuthContext";
 
@@ -29,7 +33,7 @@ const Register = () => {
     password: "",
   });
 
-  const [collegeId, setCollegeId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -44,103 +48,58 @@ const Register = () => {
     try {
       const res = await api.post("/auth/register", formData);
 
-      login(res.data.token, res.data.role);
-      setCollegeId(res.data.collegeId);
-
+      const cleanRole = res.data.role.replace("ROLE_", "");
+      login(res.data.token, cleanRole);
+      navigate("/student");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Registration failed."
-      );
+      setError(err.response?.data?.message || "Registration failed.");
     } finally {
       setLoading(false);
     }
   };
 
-  /* SUCCESS SCREEN */
-  if (collegeId) {
-    return (
-      <Box
+  return (
+    <motion.div
+      initial={{ x: -100, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 100, opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      style={{ width: "100%", display: "flex", justifyContent: "center" }}
+    >
+      <Card
         sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          width: 520,
+          p: 4,
+          backgroundColor: "rgba(30,41,59,0.9)",
+          backdropFilter: "blur(12px)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 0 60px rgba(212,175,55,0.25)",
+          borderRadius: 4,
         }}
       >
-        <Card sx={{ width: 450, p: 3, textAlign: "center" }}>
-          <CardContent>
-            <Typography variant="h4" gutterBottom color="primary">
-              🎉 Registration Successful
-            </Typography>
-
-            <Typography sx={{ mb: 2 }}>
-              Please save your College ID carefully:
-            </Typography>
-
-            <Box
-              sx={{
-                p: 2,
-                backgroundColor: "#f5f5f5",
-                borderRadius: 2,
-                fontWeight: "bold",
-                fontSize: "18px",
-              }}
-            >
-              {collegeId}
-            </Box>
-
-            <Button
-              variant="contained"
-              sx={{ mt: 3 }}
-              onClick={() => navigate("/student")}
-            >
-              Go to Dashboard
-            </Button>
-
-            <Typography sx={{ mt: 2 }}>
-              <Link to="/">⬅ Back to Home</Link>
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
-    );
-  }
-
-  /* FORM */
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Card sx={{ width: 500, p: 3 }}>
         <CardContent>
-          <Typography variant="h4" align="center" gutterBottom>
-            Student Registration
+
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{ fontWeight: 600, color: "#fff" }}
+          >
+            Create Account
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              label="Full Name"
-              name="fullName"
-              fullWidth
-              margin="normal"
-              required
-              onChange={handleChange}
-            />
+          <Typography
+            align="center"
+            variant="body2"
+            sx={{ mb: 3, color: "#94a3b8" }}
+          >
+            Join the ASCII Portal
+          </Typography>
 
-            <TextField
-              select
-              label="Select Class"
-              name="studentClass"
-              fullWidth
-              margin="normal"
-              required
-              onChange={handleChange}
-            >
+          <form onSubmit={handleSubmit}>
+
+            <TextField label="Full Name" name="fullName" fullWidth margin="normal" required onChange={handleChange} />
+
+            <TextField select label="Select Class" name="studentClass" fullWidth margin="normal" required onChange={handleChange}>
               <MenuItem value="">Select Class</MenuItem>
               <MenuItem value="FE">FE</MenuItem>
               <MenuItem value="SE">SE</MenuItem>
@@ -148,88 +107,65 @@ const Register = () => {
               <MenuItem value="BE">BE</MenuItem>
             </TextField>
 
-            <TextField
-              label="Division"
-              name="division"
-              fullWidth
-              margin="normal"
-              required
-              onChange={handleChange}
-            />
+            <TextField label="Division" name="division" fullWidth margin="normal" required onChange={handleChange} />
 
-            <TextField
-              label="Roll Number"
-              name="rollNumber"
-              type="number"
-              fullWidth
-              margin="normal"
-              required
-              onChange={handleChange}
-            />
+            <TextField label="Roll Number" name="rollNumber" type="number" fullWidth margin="normal" required onChange={handleChange} />
 
-            <TextField
-              label="Contact Number"
-              name="contactNumber"
-              fullWidth
-              margin="normal"
-              required
-              onChange={handleChange}
-            />
+            <TextField label="Contact Number" name="contactNumber" fullWidth margin="normal" required onChange={handleChange} />
 
-            <TextField
-              label="Email"
-              name="email"
-              type="email"
-              fullWidth
-              margin="normal"
-              required
-              onChange={handleChange}
-            />
+            <TextField label="Email" name="email" type="email" fullWidth margin="normal" required onChange={handleChange} />
 
             <TextField
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               fullWidth
               margin="normal"
               required
               onChange={handleChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <VisibilityOff sx={{ color: "#94a3b8" }} /> : <Visibility sx={{ color: "#94a3b8" }} />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
-            {error && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {error}
-              </Alert>
-            )}
+            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
 
             <Button
               type="submit"
               variant="contained"
               fullWidth
-              sx={{ mt: 3 }}
+              sx={{
+                mt: 3,
+                py: 1.3,
+                fontWeight: 600,
+                borderRadius: 3,
+                boxShadow: "0 10px 30px rgba(212,175,55,0.35)",
+                "&:hover": { transform: "translateY(-3px)" },
+              }}
               disabled={loading}
             >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Register"
-              )}
+              {loading ? <CircularProgress size={22} color="inherit" /> : "Register"}
             </Button>
 
             <Divider sx={{ my: 3 }} />
 
-            <Typography align="center" variant="body2">
+            <Typography align="center" sx={{ color: "#cbd5e1" }}>
               Already have an account?{" "}
-              <Link to="/login">Login here</Link>
+              <Link to="/login" style={{ color: "#2563eb" }}>
+                Login
+              </Link>
             </Typography>
 
-            <Typography align="center" variant="body2" sx={{ mt: 1 }}>
-              <Link to="/">⬅ Back to Home</Link>
-            </Typography>
-          </Box>
+          </form>
         </CardContent>
       </Card>
-    </Box>
+    </motion.div>
   );
 };
 

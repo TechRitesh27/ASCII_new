@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "../pages/Home";
-import Login from "../pages/auth/Login"
+import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 import RequireAuth from "../auth/RequireAuth";
@@ -10,14 +10,20 @@ import StudentRoutes from "./StudentRoutes";
 import FacultyRoutes from "./FacultyRoutes";
 import AdminRoutes from "./AdminRoutes";
 
+import AuthLayout from "../layouts/AuthLayout";
+
 const AppRoutes = () => {
   return (
     <Routes>
 
       {/* ================= PUBLIC ================= */}
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+
+      {/* Auth Pages with Animation Layout */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
 
       {/* ================= STUDENT ================= */}
       <Route
