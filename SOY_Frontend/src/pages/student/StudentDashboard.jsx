@@ -105,9 +105,9 @@ const StudentDashboard = () => {
       >
         <Toolbar />
 
-        <Typography variant="h4" gutterBottom>
+        {/* <Typography variant="h4" gutterBottom>
           Student Dashboard
-        </Typography>
+        </Typography> */}
 
         <Outlet />
       </Box>

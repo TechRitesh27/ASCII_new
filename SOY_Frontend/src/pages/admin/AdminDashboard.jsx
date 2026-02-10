@@ -9,12 +9,12 @@ import {
   Divider,
 } from "@mui/material";
 
-const drawerWidth = 240;
+const drawerWidth = 250;
 
 const AdminDashboard = () => {
   return (
     <Box sx={{ display: "flex" }}>
-      
+
       {/* Sidebar */}
       <Drawer
         variant="permanent"
@@ -30,9 +30,9 @@ const AdminDashboard = () => {
           },
         }}
       >
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Admin Menu
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Admin Panel
           </Typography>
         </Box>
 
@@ -40,30 +40,72 @@ const AdminDashboard = () => {
 
         <List>
 
-          {[
-            { label: "System Control", path: "control" },
-            { label: "Final Result", path: "result" },
-            { label: "Add Faculty", path: "faculty/add" },
-            { label: "View Faculties", path: "faculty/list" },
-            { label: "Manage Students", path: "students" },
-            { label: "Manage Faculty", path: "faculties" },
-          ].map((item) => (
-            <ListItemButton
-              key={item.path}
-              component={NavLink}
-              to={item.path}
-              sx={{
-                "&.active": {
-                  backgroundColor: "#334155",
-                },
-                "&:hover": {
-                  backgroundColor: "#334155",
-                },
-              }}
-            >
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          ))}
+          {/* SYSTEM */}
+          <Typography sx={{ px: 3, pt: 2, pb: 1, fontSize: 13, opacity: 0.7 }}>
+            SYSTEM
+          </Typography>
+
+          <ListItemButton
+            component={NavLink}
+            to="control"
+            sx={{
+              "&.active": { backgroundColor: "#334155" },
+              "&:hover": { backgroundColor: "#334155" },
+            }}
+          >
+            <ListItemText primary="System Control" />
+          </ListItemButton>
+
+          <ListItemButton
+            component={NavLink}
+            to="result"
+            sx={{
+              "&.active": { backgroundColor: "#334155" },
+              "&:hover": { backgroundColor: "#334155" },
+            }}
+          >
+            <ListItemText primary="Final Result" />
+          </ListItemButton>
+
+          <Divider sx={{ my: 2, backgroundColor: "rgba(255,255,255,0.2)" }} />
+
+          {/* USER MANAGEMENT */}
+          <Typography sx={{ px: 3, pb: 1, fontSize: 13, opacity: 0.7 }}>
+            USER MANAGEMENT
+          </Typography>
+
+          <ListItemButton
+            component={NavLink}
+            to="faculty/add"
+            sx={{
+              "&.active": { backgroundColor: "#334155" },
+              "&:hover": { backgroundColor: "#334155" },
+            }}
+          >
+            <ListItemText primary="Add Faculty" />
+          </ListItemButton>
+          
+          <ListItemButton
+            component={NavLink}
+            to="faculty"
+            sx={{
+              "&.active": { backgroundColor: "#334155" },
+              "&:hover": { backgroundColor: "#334155" },
+            }}
+          >
+            <ListItemText primary="Faculty Management" />
+          </ListItemButton>
+
+         <ListItemButton
+            component={NavLink}
+            to="students"
+            sx={{
+              "&.active": { backgroundColor: "#334155" },
+              "&:hover": { backgroundColor: "#334155" },
+            }}
+          >
+            <ListItemText primary="Student Management" />
+          </ListItemButton>
 
         </List>
       </Drawer>
@@ -79,10 +121,6 @@ const AdminDashboard = () => {
           minHeight: "100vh",
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 600, mb: 3 }}>
-          Admin Dashboard
-        </Typography>
-
         <Outlet />
       </Box>
 

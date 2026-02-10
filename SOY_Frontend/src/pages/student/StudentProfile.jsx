@@ -61,13 +61,13 @@ const StudentProfile = () => {
 
       <Stack spacing={2}>
 
-        <ProfileRow label="College ID" value={profile.collegeId} />
-        <ProfileRow label="Full Name" value={profile.fullName} />
-        <ProfileRow label="Email" value={profile.email} />
-        <ProfileRow label="Class" value={profile.studentClass} />
-        <ProfileRow label="Division" value={profile.division} />
-        <ProfileRow label="Roll Number" value={profile.rollNumber} />
-        <ProfileRow label="Contact Number" value={profile.contactNumber} />
+        <ProfileRow label="College ID : " value={profile.collegeId} />
+        <ProfileRow label="Full Name : " value={profile.fullName} />
+        <ProfileRow label="Email : " value={profile.email} />
+        <ProfileRow label="Class : " value={profile.studentClass} />
+        <ProfileRow label="Division : " value={profile.division} />
+        <ProfileRow label="Roll Number : " value={profile.rollNumber} />
+        <ProfileRow label="Contact Number : " value={profile.contactNumber} />
 
         <Box sx={{ mt: 2 }}>
           <Chip

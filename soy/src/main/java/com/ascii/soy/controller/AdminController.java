@@ -1,33 +1,29 @@
 package com.ascii.soy.controller;
 
+import com.ascii.soy.dto.AddFacultyRequest;
 import com.ascii.soy.dto.FacultyResponseDTO;
-import com.ascii.soy.entity.Role;
+import com.ascii.soy.dto.StudentAdminDTO;
 import com.ascii.soy.entity.VotingPhase;
 import com.ascii.soy.repository.VotingPhaseRepository;
+import com.ascii.soy.service.AdminService;
+import com.ascii.soy.service.NominationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import com.ascii.soy.dto.AddFacultyRequest;
-import com.ascii.soy.entity.User;
-import com.ascii.soy.service.AdminService;
-import com.ascii.soy.service.NominationService;
-
-import jakarta.validation.Valid;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')") // Apply to entire controller
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
     private final NominationService nominationService;
     private final VotingPhaseRepository votingPhaseRepository;
-
 
     public AdminController(AdminService adminService,
                            NominationService nominationService,
@@ -37,23 +33,11 @@ public class AdminController {
         this.votingPhaseRepository = votingPhaseRepository;
     }
 
-
     /* ================= FACULTY ================= */
 
     @GetMapping("/faculty")
-    public ResponseEntity<List<User>> getAllFaculty() {
-        return ResponseEntity.ok(
-                adminService.getAllFaculty()
-        );
-    }
-
-    @GetMapping("/users/{role}")
-    public ResponseEntity<List<User>> getUsersByRole(
-            @PathVariable Role role) {
-
-        return ResponseEntity.ok(
-                adminService.getUsersByRole(role)
-        );
+    public ResponseEntity<List<FacultyResponseDTO>> getAllFaculty() {
+        return ResponseEntity.ok(adminService.getAllFaculty());
     }
 
     @PostMapping("/faculty/add")
@@ -64,6 +48,12 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(faculty);
     }
 
+    /* ================= STUDENTS ================= */
+
+    @GetMapping("/students")
+    public ResponseEntity<List<StudentAdminDTO>> getStudents() {
+        return ResponseEntity.ok(adminService.getAllStudents());
+    }
 
     /* ================= ENABLE / DISABLE ================= */
 
@@ -76,23 +66,21 @@ public class AdminController {
         return ResponseEntity.ok("User status updated");
     }
 
-    /* ================= SHORTLIST GENERATION ================= */
+    /* ================= SHORTLIST ================= */
 
     @PutMapping("/shortlist/generate")
     public ResponseEntity<?> generateShortlist() {
-
         nominationService.generateShortlist();
         return ResponseEntity.ok("Shortlist generated successfully");
     }
+
+    /* ================= VOTING ================= */
 
     @PutMapping("/voting/open")
     public ResponseEntity<?> openVoting() {
 
         VotingPhase phase = votingPhaseRepository.findById(1L)
-                .orElseGet(() -> {
-                    VotingPhase newPhase = new VotingPhase();
-                    return votingPhaseRepository.save(newPhase);
-                });
+                .orElseGet(() -> votingPhaseRepository.save(new VotingPhase()));
 
         phase.setVotingOpen(true);
         votingPhaseRepository.save(phase);
@@ -124,5 +112,4 @@ public class AdminController {
 
         return ResponseEntity.ok(phase.isVotingOpen());
     }
-    
 }

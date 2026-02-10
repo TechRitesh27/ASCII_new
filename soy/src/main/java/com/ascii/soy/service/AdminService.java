@@ -2,8 +2,10 @@ package com.ascii.soy.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.ascii.soy.dto.FacultyResponseDTO;
+import com.ascii.soy.dto.StudentAdminDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,10 +23,9 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public AdminService(
-            UserRepository userRepo,
-            PasswordEncoder passwordEncoder,
-            EmailService emailService) {
+    public AdminService(UserRepository userRepo,
+                        PasswordEncoder passwordEncoder,
+                        EmailService emailService) {
 
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
@@ -32,8 +33,9 @@ public class AdminService {
     }
 
     /* =====================================================
-       ADD FACULTY (SAFE + EMAIL BEST-EFFORT)
+       ADD FACULTY
        ===================================================== */
+
     public FacultyResponseDTO addFaculty(AddFacultyRequest request) {
 
         if (userRepo.findByEmail(request.getEmail()).isPresent()) {
@@ -73,38 +75,48 @@ public class AdminService {
             System.err.println("⚠️ Email failed: " + ex.getMessage());
         }
 
-        return new FacultyResponseDTO(
-                savedFaculty.getCollegeId(),
-                savedFaculty.getFullName(),
-                savedFaculty.getEmail(),
-                savedFaculty.getDepartment(),
-                savedFaculty.getDesignation(),
-                savedFaculty.isActive(),
-                emailSent
-        );
+        return mapToFacultyDTO(savedFaculty, emailSent);
     }
 
+    /* =====================================================
+       GET ALL FACULTY (RETURN DTO, NOT ENTITY)
+       ===================================================== */
+
+    public List<FacultyResponseDTO> getAllFaculty() {
+
+        return userRepo.findByRole(Role.FACULTY)
+                .stream()
+                .map(user -> mapToFacultyDTO(user, true))
+                .collect(Collectors.toList());
+    }
 
     /* =====================================================
-       LIST ALL FACULTY
+       GET ALL STUDENTS (ADMIN VIEW)
        ===================================================== */
-    public List<User> getAllFaculty() {
 
-        List<User> faculty = userRepo.findByRole(Role.FACULTY);
+    public List<StudentAdminDTO> getAllStudents() {
 
-        if (faculty.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "No faculty members found"
-            );
-        }
-
-        return faculty;
+        return userRepo.findByRole(Role.STUDENT)
+                .stream()
+                .map(user -> new StudentAdminDTO(
+                        user.getId(),
+                        user.getCollegeId(),
+                        user.getFullName(),
+                        user.getEmail(),
+                        user.getStudentClass() != null
+                                ? user.getStudentClass().name()
+                                : null,
+                        user.getDivision(),
+                        user.getRollNumber(),
+                        user.isActive()
+                ))
+                .collect(Collectors.toList());
     }
 
     /* =====================================================
        ENABLE / DISABLE USER
        ===================================================== */
+
     public void updateUserStatus(Long userId, boolean active) {
 
         User user = userRepo.findById(userId)
@@ -113,7 +125,6 @@ public class AdminService {
                         "User not found"
                 ));
 
-        // ❌ Protect Admin account
         if (user.getRole() == Role.ADMIN) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -126,20 +137,20 @@ public class AdminService {
     }
 
     /* =====================================================
-       LIST USERS BY ROLE
+       PRIVATE MAPPERS
        ===================================================== */
-    public List<User> getUsersByRole(Role role) {
 
-        List<User> users = userRepo.findByRole(role);
+    private FacultyResponseDTO mapToFacultyDTO(User user, boolean emailSent) {
 
-        if (users.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "No users found for role: " + role
-            );
-        }
-
-        return users;
+        return new FacultyResponseDTO(
+                user.getCollegeId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getDepartment(),
+                user.getDesignation(),
+                user.isActive(),
+                emailSent
+        );
     }
 
     /* =====================================================
@@ -149,10 +160,8 @@ public class AdminService {
     private String generateFacultyId() {
 
         long facultyCount = userRepo.countByRole(Role.FACULTY);
-
         return "FAC" + String.format("%03d", facultyCount + 1);
     }
-
 
     private String generateTempPassword() {
         return UUID.randomUUID()
