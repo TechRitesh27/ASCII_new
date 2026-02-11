@@ -74,7 +74,6 @@ const Login = () => {
         }}
       >
         <CardContent>
-
           <Typography
             variant="h4"
             align="center"
@@ -92,7 +91,6 @@ const Login = () => {
           </Typography>
 
           <form onSubmit={handleLogin}>
-
             <TextField
               label="College ID"
               fullWidth
@@ -113,9 +111,7 @@ const Login = () => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? (
                         <VisibilityOff sx={{ color: "#94a3b8" }} />
                       ) : (
@@ -126,6 +122,15 @@ const Login = () => {
                 ),
               }}
             />
+
+            <Typography variant="body2" sx={{ textAlign: "right", mt: 1 }}>
+              <Link
+                to="/forgot-password"
+                style={{ color: "#2563eb", textDecoration: "none" }}
+              >
+                Forgot Password?
+              </Link>
+            </Typography>
 
             {error && (
               <Alert severity="error" sx={{ mt: 2 }}>
@@ -163,7 +168,6 @@ const Login = () => {
                 Register
               </Link>
             </Typography>
-
           </form>
         </CardContent>
       </Card>

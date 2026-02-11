@@ -1,10 +1,6 @@
 package com.ascii.soy.service;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
+import com.ascii.soy.dto.ResetPasswordRequest;
 import com.ascii.soy.dto.LoginRequest;
 import com.ascii.soy.dto.LoginResponse;
 import com.ascii.soy.dto.RegisterRequest;
@@ -13,26 +9,35 @@ import com.ascii.soy.entity.User;
 import com.ascii.soy.repository.UserRepository;
 import com.ascii.soy.security.JwtUtil;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 @Service
 public class AuthService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final OtpService otpService;
 
     public AuthService(
             UserRepository userRepo,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil,
+            OtpService otpService) {
 
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.otpService = otpService;
     }
 
     /* =====================================================
-       LOGIN (STUDENT / FACULTY / ADMIN)
+       LOGIN
        ===================================================== */
+
     public LoginResponse login(LoginRequest request) {
 
         User user = userRepo.findByCollegeId(request.getCollegeId())
@@ -43,7 +48,6 @@ public class AuthService {
                         )
                 );
 
-        // 🔐 Password check
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
@@ -54,7 +58,6 @@ public class AuthService {
             );
         }
 
-        // 🚫 Active check
         if (!user.isActive()) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
@@ -62,7 +65,6 @@ public class AuthService {
             );
         }
 
-        // ✅ Generate JWT
         String token = jwtUtil.generateToken(
                 user.getCollegeId(),
                 user.getRole().name()
@@ -76,11 +78,12 @@ public class AuthService {
     }
 
     /* =====================================================
-       STUDENT REGISTRATION
+       REGISTER
        ===================================================== */
+
     public LoginResponse register(RegisterRequest request) {
 
-        if (userRepo.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepo.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Email already registered"
@@ -96,10 +99,7 @@ public class AuthService {
         student.setEmail(request.getEmail());
 
         student.setCollegeId(generateStudentCollegeId());
-        student.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
-
+        student.setPassword(passwordEncoder.encode(request.getPassword()));
         student.setRole(Role.STUDENT);
         student.setActive(true);
 
@@ -118,14 +118,53 @@ public class AuthService {
     }
 
     /* =====================================================
-       UTIL
+       RESET PASSWORD
        ===================================================== */
-    private String generateStudentCollegeId() {
 
-        long studentCount =
-                userRepo.countByRole(Role.STUDENT);
+    // 1️⃣ Send Reset OTP
+    public void sendResetOtp(String email) {
 
-        return "STU" + String.format("%04d", studentCount + 1);
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Email not registered"
+                ));
+
+        // Call dedicated reset OTP method
+        otpService.sendResetOtp(email);
     }
 
+    // 2️⃣ Optional: Verify OTP separately
+    public void verifyResetOtp(String email, String otp) {
+        otpService.verifyOtp(email, otp);
+    }
+
+    // 3️⃣ Final Reset Password
+    public void resetPassword(ResetPasswordRequest request) {
+
+        User user = userRepo.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+
+        // Verify OTP before changing password
+        otpService.verifyOtp(request.getEmail(), request.getOtp());
+
+        // Encode and update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepo.save(user);
+
+        // Delete OTP after successful reset
+        otpService.deleteOtp(request.getEmail());
+    }
+
+    /* =====================================================
+       UTIL
+       ===================================================== */
+
+    private String generateStudentCollegeId() {
+        long studentCount = userRepo.countByRole(Role.STUDENT);
+        return "STU" + String.format("%04d", studentCount + 1);
+    }
 }

@@ -16,18 +16,20 @@ import com.ascii.soy.security.JwtUtil;
 public class RegistrationService {
 
     private final UserRepository userRepo;
-    private final PasswordEncoder passwordEncoder;   // ✅ REQUIRED
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final OtpService otpService;
 
-    // ✅ Constructor injection (BEST PRACTICE)
     public RegistrationService(
             UserRepository userRepo,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil,
+            OtpService otpService) {
 
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.otpService = otpService;
     }
 
     public LoginResponse register(RegisterRequest req) {
@@ -40,10 +42,18 @@ public class RegistrationService {
             );
         }
 
-        // 2️⃣ Generate College ID (example logic)
+        // 2️⃣ OTP must be verified
+        if (!otpService.isOtpVerified(req.getEmail())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Email not verified. Please verify OTP first."
+            );
+        }
+
+        // 3️⃣ Generate College ID
         String collegeId = generateCollegeId(req);
 
-        // 3️⃣ Create User
+        // 4️⃣ Create User
         User user = new User();
         user.setCollegeId(collegeId);
         user.setFullName(req.getFullName());
@@ -52,15 +62,16 @@ public class RegistrationService {
         user.setStudentClass(req.getStudentClass());
         user.setDivision(req.getDivision());
         user.setRollNumber(req.getRollNumber());
-
-        // 🔐 IMPORTANT: Encode password
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setRole(Role.STUDENT);
         user.setActive(true);
 
         userRepo.save(user);
 
-        // 4️⃣ Auto-login after registration
+        // 5️⃣ Delete OTP after successful registration
+        otpService.deleteOtp(req.getEmail());
+
+        // 6️⃣ Auto-login
         String token = jwtUtil.generateToken(
                 user.getCollegeId(),
                 user.getRole().name()
@@ -70,7 +81,7 @@ public class RegistrationService {
     }
 
     private String generateCollegeId(RegisterRequest req) {
-        // Example: BE-A-023
+
         return req.getStudentClass() + "-"
                 + req.getDivision() + "-"
                 + String.format("%03d", req.getRollNumber());

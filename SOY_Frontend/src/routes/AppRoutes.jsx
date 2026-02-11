@@ -11,6 +11,8 @@ import FacultyRoutes from "./FacultyRoutes";
 import AdminRoutes from "./AdminRoutes";
 
 import AuthLayout from "../layouts/AuthLayout";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+
 
 const AppRoutes = () => {
   return (
@@ -24,6 +26,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+
 
       {/* ================= STUDENT ================= */}
       <Route

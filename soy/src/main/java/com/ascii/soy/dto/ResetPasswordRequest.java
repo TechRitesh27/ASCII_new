@@ -1,23 +1,45 @@
 package com.ascii.soy.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public class ResetPasswordRequest {
 
     @NotBlank
-    private String collegeId;
+    private String email;
 
     @NotBlank
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String otp;
+
+    @NotBlank
     private String newPassword;
 
-    public String getCollegeId() {
-        return collegeId;
+    // Default Constructor
+    public ResetPasswordRequest() {
     }
 
-    public void setCollegeId(String collegeId) {
-        this.collegeId = collegeId;
+    // All-Args Constructor
+    public ResetPasswordRequest(String email, String otp, String newPassword) {
+        this.email = email;
+        this.otp = otp;
+        this.newPassword = newPassword;
+    }
+
+    // Getters and Setters
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 
     public String getNewPassword() {
