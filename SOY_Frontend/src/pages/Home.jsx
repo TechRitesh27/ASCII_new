@@ -16,6 +16,8 @@ import CampaignIcon from "@mui/icons-material/Campaign";
 import InsightsIcon from "@mui/icons-material/Insights";
 import CodeIcon from "@mui/icons-material/Code";
 import logo from "../assets/ascii-logo.png";
+import NoticeSection from "../components/NoticeSection";
+
 
 const Home = () => {
   return (
@@ -197,6 +199,9 @@ const Home = () => {
         </Grid>
       </Container>
 
+      {/* ================ NOTICE SECTION =================== */}
+      <NoticeSection />
+
       {/* ================= MODULES SECTION ================= */}
       <Container sx={{ py: 10 }}>
         <Typography variant="h4" sx={{ mb: 6, fontWeight: 600 }}>
@@ -267,7 +272,7 @@ const Home = () => {
               { number: "300+", label: "Students" },
               { number: "20+", label: "Faculty" },
               { number: "10+", label: "Events" },
-              { number: "1", label: "Flagship Award" },
+              // { number: "1", label: "Flagship Award" },
             ].map((item, index) => (
               <Grid item xs={6} md={3} key={index}>
                 <Typography

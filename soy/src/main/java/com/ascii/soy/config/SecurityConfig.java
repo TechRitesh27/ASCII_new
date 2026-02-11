@@ -28,9 +28,16 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // ✅ PUBLIC ENDPOINTS
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/notices/active",
+                                "/uploads/**"          // 🔥 VERY IMPORTANT
+                        ).permitAll()
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // ✅ ROLE-BASED ACCESS
                         .requestMatchers("/api/nominations/**")
                         .hasAuthority("ROLE_STUDENT")
 
@@ -46,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/results/**")
                         .hasAuthority("ROLE_ADMIN")
 
+                        // ✅ EVERYTHING ELSE REQUIRES AUTH
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

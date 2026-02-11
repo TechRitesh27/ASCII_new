@@ -66,6 +66,16 @@ const AdminDashboard = () => {
           >
             <ListItemText primary="Final Result" />
           </ListItemButton>
+            <ListItemButton
+            component={NavLink}
+            to="notices"
+            sx={{
+              "&.active": { backgroundColor: "#334155" },
+              "&:hover": { backgroundColor: "#334155" },
+            }}
+          >
+            <ListItemText primary="Notices" />  
+          </ListItemButton>
 
           <Divider sx={{ my: 2, backgroundColor: "rgba(255,255,255,0.2)" }} />
 

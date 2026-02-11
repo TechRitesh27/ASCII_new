@@ -4,6 +4,7 @@ import AdminControlPanel from "../pages/admin/AdminControlPanel";
 import Result from "../pages/admin/Result";
 import AddFaculty from "../pages/admin/AddFaculty";
 import AdminUsers from "../pages/admin/AdminUsers";
+import AdminNotices from "../pages/admin/AdminNotices";
 
 const AdminRoutes = () => {
   return (
@@ -15,6 +16,8 @@ const AdminRoutes = () => {
         {/* System */}
         <Route path="control" element={<AdminControlPanel />} />
         <Route path="result" element={<Result />} />
+        <Route path="notices" element={<AdminNotices />} />
+
 
         {/* Faculty */}
         <Route path="faculty">
