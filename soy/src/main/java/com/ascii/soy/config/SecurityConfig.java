@@ -28,32 +28,35 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ PUBLIC ENDPOINTS
+                        /* ================= PUBLIC ENDPOINTS ================= */
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/public/**",          // ✅ Public APIs
                                 "/api/notices/active",
-                                "/uploads/**"          // 🔥 VERY IMPORTANT
+                                "/uploads/**"              // ✅ Uploaded images
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ✅ ROLE-BASED ACCESS
+                        /* ================= STUDENT ================= */
                         .requestMatchers("/api/nominations/**")
-                        .hasAuthority("ROLE_STUDENT")
+                        .hasRole("STUDENT")
 
                         .requestMatchers("/api/votes/**")
-                        .hasAuthority("ROLE_STUDENT")
+                        .hasRole("STUDENT")
 
+                        /* ================= FACULTY ================= */
                         .requestMatchers("/api/faculty/**")
-                        .hasAuthority("ROLE_FACULTY")
+                        .hasRole("FACULTY")
 
+                        /* ================= ADMIN ================= */
                         .requestMatchers("/api/admin/**")
-                        .hasAuthority("ROLE_ADMIN")
+                        .hasRole("ADMIN")
 
                         .requestMatchers("/api/results/**")
-                        .hasAuthority("ROLE_ADMIN")
+                        .hasRole("ADMIN")
 
-                        // ✅ EVERYTHING ELSE REQUIRES AUTH
+                        /* ================= DEFAULT ================= */
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
